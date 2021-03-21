@@ -11,8 +11,14 @@ HINSTANCE hInst;                                // текущий экземпл
 WCHAR szTitle[MAX_LOADSTRING];                  // Текст строки заголовка
 WCHAR szWindowClass[MAX_LOADSTRING];            // имя класса главного окна
 int current_question = 0; // Текущий вопрос | использовуется для отрисовки нужного вопроса
-int result[5] = { 0, 0, 0, 0, 0 };
+int result[5] = { 0, 0, 0, 0, 0 };          // массив в который записываются ответы
+int good_result[5] = { 3, 6, 10, 12, 17 };  // массив с правильными ответами
 HWND hwndButton_1, hwndButton_2, hwndButton_3, hwndButton_4, hwndButton_5, hwndButton_6, hwndButton_7, hwndButton_8, hwndButton_9, hwndButton_10, hwndButton_11, hwndButton_12, hwndButton_13, hwndButton_14, hwndButton_15, hwndButton_16, hwndButton_17;
+
+// переменные для изменения заднего фона
+HBRUSH brush;
+RECT clientRect;
+int r = 255, g = 255, b = 255;
 
 // Список вопросов-
 wchar_t welcome_1[]  = L"Добро пожаловать в вeселую викторину по литературе";                                               // Приветствие
@@ -23,12 +29,36 @@ wchar_t question_3[] = L"Он знаком многим. Был и художн�
 wchar_t question_4[] = L"В Древней Греции на этих зданиях было написано: «Здесь живут мертвые и говорят живые».";           // 4) Ответ: На библиотеках         - 12_b
 wchar_t question_5[] = L"Кому принадлежит выражение: «Краткость – сестра таланта».";                                        // 5) Ответ: А.П.Чехов              - 17_b
 
+/*
+wchar_t** answer = new wchar_t* [] {
+    L"30 лет и 3 месяца", L"30 лет и 3 года", L"330 лет",
+    L"Даль В.И.", L"Пушкин А.С.", L"А.П.Чехов",
+    L"Мюнхгаузен", L"Незнайка", L"Гагарин Ю.А.",
+    L"На библиотеках", L"На склепах", L"На храмах",
+    L"Даль В.И.", L"Пушкин А.С.", L"А.П.Чехов"
+};
+*/
 // Список ответов
 wchar_t answer_3[] = L"30 лет и 3 месяца", answer_4[] = L"30 лет и 3 года", answer_5[] = L"330 лет";
 wchar_t answer_6[] = L"Даль В.И.", answer_7[] = L"Пушкин А.С.", answer_8[] = L"А.П.Чехов";
 wchar_t answer_9[] = L"Мюнхгаузен", answer_10[] = L"Незнайка", answer_11[] = L"Гагарин Ю.А.";
 wchar_t answer_12[] = L"На библиотеках", answer_13[] = L"На склепах", answer_14[] = L"На храмах";
 wchar_t answer_15[] = L"Даль В.И.", answer_16[] = L"Пушкин А.С.", answer_17[] = L"А.П.Чехов";
+
+void check_answer(HDC hdc, int i, int x, int y) {
+    if (result[i] == good_result[i]) {
+        //true
+        SetTextColor(hdc, RGB(0, 255, 0));
+        TextOut(hdc, x, y, L"Правильный ", ARRAYSIZE("Правильный "));
+        SetTextColor(hdc, RGB(0, 0, 0));
+    }
+    else {
+        //false
+        SetTextColor(hdc, RGB(255, 0, 0));
+        TextOut(hdc, x, y, L"Неправильный ", ARRAYSIZE("Неправильный "));
+        SetTextColor(hdc, RGB(0, 0, 0));
+    }
+}
 
 void button_question_1(HWND hWnd) {
     DestroyWindow(hwndButton_1);
@@ -547,6 +577,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDM_EXIT:
                 DestroyWindow(hWnd);
                 break;
+            case ID_32776: {
+                r = 110; g = 177; b = 244;
+                InvalidateRect(hWnd, NULL, true);
+            } break;
+            case ID_32777: {
+                r = 173; g = 244; b = 102;
+                InvalidateRect(hWnd, NULL, true);
+            } break;
+            case ID_32778: {
+                r = 252; g = 164; b = 240;
+                InvalidateRect(hWnd, NULL, true);
+            } break;
+            case ID_32779: {
+                r = 255; g = 255; b = 255;
+                InvalidateRect(hWnd, NULL, true);
+            } break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
@@ -556,6 +602,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
+
+            GetClientRect(hWnd, &clientRect);
+            brush = CreateSolidBrush(RGB(r, g, b));
+            FillRect(hdc, &clientRect, brush);
             
             switch (current_question){
                 case 0: {
@@ -597,11 +647,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 case 6: {
                     // результаты
                     TextOut(hdc, 10, 10, L"Конец. Результаты викторины:", ARRAYSIZE("Конец. Результаты викторины:"));
-                    TextOut(hdc, 10, 50, question_5, ARRAYSIZE(question_5));
-                    TextOut(hdc, 10, 70, L"Правильный ответ: ", ARRAYSIZE("Правильный ответ: "));
                     // Вопрос 1
-                    TextOut(hdc, 10, 70, answer_3, ARRAYSIZE(answer_3));
-                    TextOut(hdc, 10, 70, L"Ваш ответ: ", ARRAYSIZE("Ваш ответ: "));
+                    TextOut(hdc, 10, 50, question_1, ARRAYSIZE(question_1));
+                    TextOut(hdc, 10, 70, L"Правильный ответ: ", ARRAYSIZE("Правильный ответ: "));
+                    TextOut(hdc, 150, 70, answer_3, ARRAYSIZE(answer_3));
+                    TextOut(hdc, 360, 70, L"Ваш ответ: ", ARRAYSIZE("Ваш ответ: "));
+                    check_answer(hdc, 0, 450, 70);
+
+                    // Вопрос 2
+                    TextOut(hdc, 10, 100, question_2, ARRAYSIZE(question_2));
+                    TextOut(hdc, 10, 120, L"Правильный ответ: ", ARRAYSIZE("Правильный ответ: "));
+                    TextOut(hdc, 150, 120, answer_6, ARRAYSIZE(answer_6));
+                    TextOut(hdc, 360, 120, L"Ваш ответ: ", ARRAYSIZE("Ваш ответ: "));
+                    check_answer(hdc, 1, 450, 120);
+
+                    // Вопрос 3
+                    TextOut(hdc, 10, 150, question_3, ARRAYSIZE(question_3));
+                    TextOut(hdc, 10, 170, L"Правильный ответ: ", ARRAYSIZE("Правильный ответ: "));
+                    TextOut(hdc, 150, 170, answer_10, ARRAYSIZE(answer_10));
+                    TextOut(hdc, 360, 170, L"Ваш ответ: ", ARRAYSIZE("Ваш ответ: "));
+                    check_answer(hdc, 2, 450, 170);
+
+                    // Вопрос 4
+                    TextOut(hdc, 10, 200, question_4, ARRAYSIZE(question_4));
+                    TextOut(hdc, 10, 220, L"Правильный ответ: ", ARRAYSIZE("Правильный ответ: "));
+                    TextOut(hdc, 150, 220, answer_12, ARRAYSIZE(answer_12));
+                    TextOut(hdc, 360, 220, L"Ваш ответ: ", ARRAYSIZE("Ваш ответ: "));
+                    check_answer(hdc, 3, 450, 220);
+
+                    // Вопрос 5
+                    TextOut(hdc, 10, 250, question_5, ARRAYSIZE(question_5));
+                    TextOut(hdc, 10, 270, L"Правильный ответ: ", ARRAYSIZE("Правильный ответ: "));
+                    TextOut(hdc, 150, 270, answer_17, ARRAYSIZE(answer_17));
+                    TextOut(hdc, 360, 270, L"Ваш ответ: ", ARRAYSIZE("Ваш ответ: "));
+                    check_answer(hdc, 4, 450, 270);
                 } break;
             }
             EndPaint(hWnd, &ps);
@@ -610,6 +689,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -631,6 +711,8 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             EndDialog(hDlg, LOWORD(wParam));
             return (INT_PTR)TRUE;
         }
+        
+
         break;
     }
     return (INT_PTR)FALSE;
