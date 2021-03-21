@@ -21,6 +21,7 @@ std::string curTimeStr;
 char curTimeChar[9];
 wchar_t curTime[9];
 RECT clientRect; 
+int timezone = 0; // часовой пояс
 
 // Отправить объявления функций, включенных в этот модуль кода:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -173,7 +174,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 TerminateThread(thread[0], 0);
                 TerminateThread(thread[1], 0);
             break;
-
+            case ID_32771:
+                timezone = 0;
+                break;
+            case ID_32773:
+                timezone = 1;
+                break;
+            case ID_32774:
+                timezone = 2;
+                break;
+            case ID_32775:
+                timezone = 3;
+                break;
+            case ID_32779:
+                timezone = -5;
+                break;
+            case ID_32780:
+                timezone = -6;
+                break;
+            case ID_32781:
+                timezone = -7;
+                break;
+            case ID_32782:
+                timezone = -4;
+                break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
@@ -188,6 +212,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             GetClientRect(hWnd, &clientRect);
             brush = CreateSolidBrush(RGB(241, 248, 255));
             FillRect(hdc, &clientRect, brush);
+
+            // инструкция
+            TextOut(hdc, 10, 10, L"Щелчок ПКМ - запустить потоки", 29);
+            TextOut(hdc, 10, 40, L"Щелчок ЛКМ - остановить потоки", 29);
 
             // Вывод темно-зеленого текста
             SetTextColor(hdc, RGB(20, 140, 70));
@@ -214,7 +242,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 void current_time() {
     SYSTEMTIME sm;
     GetLocalTime(&sm);
-    curTimeStr = std::to_string(sm.wHour) + ':' + std::to_string(sm.wMinute) + ':' + std::to_string(sm.wSecond);
+    if ((sm.wHour - 3 + timezone) > 24) {
+        curTimeStr = std::to_string(sm.wHour + timezone - 27) + ':' + std::to_string(sm.wMinute) + ':' + std::to_string(sm.wSecond);
+    }
+    else {
+        curTimeStr = std::to_string(sm.wHour - 3 + timezone) + ':' + std::to_string(sm.wMinute) + ':' + std::to_string(sm.wSecond);
+    }
 
     for (int i = 0; i < 8; i++)
         curTimeChar[i] = curTimeStr[i];
